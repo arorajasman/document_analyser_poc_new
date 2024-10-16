@@ -1,7 +1,11 @@
+import 'dart:math';
+
+import 'package:document_analyser_poc_new/services/signalling_service.dart';
 import 'package:document_analyser_poc_new/utils/app_colors.dart';
 import 'package:document_analyser_poc_new/utils/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,8 +15,35 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final String selfCallerID =
+      Random().nextInt(999999).toString().padLeft(6, '0');
+
+  final String websocketUrl =
+      "https://d66c-103-119-166-144.ngrok-free.app/signalling-server";
+
   void _loginButtonOnPressedHandler() {
     context.go("/dashboard");
+  }
+
+  void _initSignalingService() {
+    SignallingService.instance.init(
+      websocketUrl: websocketUrl,
+      selfCallerID: selfCallerID,
+    );
+  }
+
+  void _storeCallerId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString("callerID", selfCallerID);
+    _initSignalingService();
+  }
+
+  @override
+  void initState() {
+    print('init is called..');
+    _storeCallerId();
+
+    super.initState();
   }
 
   @override

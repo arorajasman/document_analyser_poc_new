@@ -9,13 +9,13 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PhoneCallService {
-  Future<void> requestPermissions() async {
-    await Permission.microphone.request();
-    if (!kIsWeb) {
-      await Permission.storage.request();
-      await Permission.phone.request();
-    }
-  }
+  // Future<void> requestPermissions() async {
+  //   await Permission.microphone.request();
+  //   if (!kIsWeb) {
+  //     await Permission.storage.request();
+  //     await Permission.phone.request();
+  //   }
+  // }
 
   Future<void> startRecording() async {}
 

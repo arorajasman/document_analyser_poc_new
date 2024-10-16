@@ -52,7 +52,7 @@ class CustomerPhoneCallBloc
     RequestRecordPermissions event,
     Emitter<CustomerPhoneCallState> emit,
   ) {
-    _phoneCallService.requestPermissions();
+    // _phoneCallService.requestPermissions();
   }
 
   Future<void> _startCallEventHandler(

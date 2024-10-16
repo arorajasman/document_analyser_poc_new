@@ -3,6 +3,7 @@ import 'package:document_analyser_poc_new/models/leads.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ActionsPopupMenuUI extends StatefulWidget {
   final Leads lead;
@@ -13,12 +14,20 @@ class ActionsPopupMenuUI extends StatefulWidget {
 }
 
 class _ActionsPopupMenuUIState extends State<ActionsPopupMenuUI> {
-  void _onMenuItemPressed(int index, String title) {
+  void _onMenuItemPressed(int index, String title) async {
     if (index == 3 && title == "Call Now") {
+      final prefs = await SharedPreferences.getInstance();
+      final String? callerId = prefs.getString('callerID');
+      final Map<String, dynamic> extraObj = {
+        "lead": widget.lead,
+        "callerId": callerId
+      };
+      print('extraObj');
+      print(extraObj);
       context
           .read<CustomerPhoneCallBloc>()
           .add(const StartCallEvent(phoneNumber: "8826112702"));
-      context.go('/customers/${widget.lead.id}/call', extra: widget.lead);
+      context.go('/customers/${widget.lead.id}/call', extra: extraObj);
     }
   }
 
