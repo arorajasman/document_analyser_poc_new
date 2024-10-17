@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
       Random().nextInt(999999).toString().padLeft(6, '0');
 
   final String websocketUrl =
-      "https://d66c-103-119-166-144.ngrok-free.app/signalling-server";
+      "https://13eb-103-119-166-144.ngrok-free.app/signalling-server";
 
   void _loginButtonOnPressedHandler() {
     context.go("/dashboard");

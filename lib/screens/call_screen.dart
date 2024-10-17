@@ -1,7 +1,14 @@
+// ignore_for_file: avoid_web_libraries_in_flutter
+
+import 'dart:async';
+
 import 'package:document_analyser_poc_new/services/signalling_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:go_router/go_router.dart';
+
+import 'dart:html' as html;
 
 class CallScreen extends StatefulWidget {
   final String callerId, calleeId;
@@ -39,6 +46,8 @@ class _CallScreenState extends State<CallScreen> {
   // media status
   bool isAudioOn = true, isVideoOn = true, isFrontCameraSelected = true;
 
+  final mediaRecorder = MediaRecorder();
+
   @override
   void initState() {
     // initializing renderers
@@ -57,6 +66,36 @@ class _CallScreenState extends State<CallScreen> {
   void setState(fn) {
     if (mounted) {
       super.setState(fn);
+    }
+  }
+
+  // Helper function to convert Blob to Uint8List
+  Future<Uint8List> _blobToUint8List(html.Blob blob) async {
+    final reader = html.FileReader();
+    reader.readAsArrayBuffer(blob);
+
+    await reader.onLoad.first;
+
+    return reader.result as Uint8List;
+  }
+
+  _sendAudioChunks(MediaStream stream) {
+    if (kIsWeb) {
+      mediaRecorder.startWeb(
+        _localStream!,
+        onDataChunk: (blob, isLastOne) async {
+          // Convert Blob to ArrayBuffer (which can then be converted to Uint8List)
+          Uint8List audioChunk = await _blobToUint8List(blob);
+
+          // Emit the event to the socket, sending the audio chunk
+          socket!.emit('audio_chunk',
+              {"audioChunk": audioChunk, "callerId": widget.callerId});
+
+          if (isLastOne) {
+            print('This was the last chunk');
+          }
+        },
+      );
     }
   }
 
@@ -86,8 +125,8 @@ class _CallScreenState extends State<CallScreen> {
           ? {'facingMode': isFrontCameraSelected ? 'user' : 'environment'}
           : false,
     });
-    print('localstream');
-    print(_localStream);
+
+    _sendAudioChunks(_localStream!);
 
     // add mediaTrack to peerConnection
     _localStream!.getTracks().forEach((track) {
@@ -181,7 +220,8 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   _leaveCall() {
-    context.pop();
+    socket!.close();
+    context.push('/');
   }
 
   _toggleMic() {
